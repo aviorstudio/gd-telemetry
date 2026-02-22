@@ -46,9 +46,12 @@ class TelemetryEvent extends RefCounted:
 
 var _config: TelemetryConfig = TelemetryConfig.new()
 var _event_batch: Array[TelemetryEvent] = []
+var _auto_flush_timer: Timer = null
 
 func configure(config: TelemetryConfig) -> void:
 	_config = config if config else TelemetryConfig.new()
+	if _auto_flush_timer and is_instance_valid(_auto_flush_timer):
+		_auto_flush_timer.wait_time = maxf(_config.batch_interval_s, 0.01)
 
 func is_enabled() -> bool:
 	return _config.enabled
@@ -68,8 +71,7 @@ func add_event(event: TelemetryEvent) -> void:
 		return
 	_event_batch.append(event)
 	if should_flush() and _config.flush_callback.is_valid():
-		var serialized_batch: Array[Dictionary] = drain_serialized_batch()
-		_config.flush_callback.call(serialized_batch)
+		flush()
 
 func should_flush() -> bool:
 	if not _config.enabled:
@@ -89,6 +91,38 @@ func drain_serialized_batch() -> Array[Dictionary]:
 
 	_event_batch.clear()
 	return serialized_events
+
+func flush() -> void:
+	if not _config.enabled:
+		return
+	if not _config.flush_callback.is_valid():
+		return
+	var serialized_batch: Array[Dictionary] = drain_serialized_batch()
+	if serialized_batch.is_empty():
+		return
+	_config.flush_callback.call(serialized_batch)
+
+func start_auto_flush(owner: Node) -> void:
+	if owner == null:
+		return
+	stop_auto_flush()
+	var timer := Timer.new()
+	timer.name = "TelemetryAutoFlushTimer"
+	timer.one_shot = false
+	timer.autostart = true
+	timer.wait_time = maxf(_config.batch_interval_s, 0.01)
+	owner.add_child(timer)
+	timer.timeout.connect(Callable(self, "_on_auto_flush_timeout"))
+	_auto_flush_timer = timer
+
+func stop_auto_flush() -> void:
+	if _auto_flush_timer and is_instance_valid(_auto_flush_timer):
+		_auto_flush_timer.stop()
+		_auto_flush_timer.queue_free()
+	_auto_flush_timer = null
+
+func _on_auto_flush_timeout() -> void:
+	flush()
 
 func to_dict(event: TelemetryEvent) -> Dictionary:
 	if event == null:
