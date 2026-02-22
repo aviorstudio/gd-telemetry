@@ -6,17 +6,20 @@ class TelemetryConfig extends RefCounted:
 	var batch_size: int
 	var batch_interval_s: float
 	var max_debug_messages: int
+	var flush_callback: Callable
 
 	func _init(
 		enabled: bool = false,
 		batch_size: int = 50,
 		batch_interval_s: float = 0.5,
-		max_debug_messages: int = 50
+		max_debug_messages: int = 50,
+		flush_callback: Callable = Callable()
 	) -> void:
 		self.enabled = enabled
 		self.batch_size = batch_size
 		self.batch_interval_s = batch_interval_s
 		self.max_debug_messages = max_debug_messages
+		self.flush_callback = flush_callback
 
 class TelemetryEvent extends RefCounted:
 	var timestamp_msec: int
@@ -41,16 +44,16 @@ class TelemetryEvent extends RefCounted:
 		self.message = message
 		self.metadata = metadata.duplicate(true)
 
-static var _config: TelemetryConfig = TelemetryConfig.new()
-static var _event_batch: Array[TelemetryEvent] = []
+var _config: TelemetryConfig = TelemetryConfig.new()
+var _event_batch: Array[TelemetryEvent] = []
 
-static func configure(config: TelemetryConfig) -> void:
+func configure(config: TelemetryConfig) -> void:
 	_config = config if config else TelemetryConfig.new()
 
-static func is_enabled() -> bool:
+func is_enabled() -> bool:
 	return _config.enabled
 
-static func create_event(
+func create_event(
 	timestamp_msec: int,
 	level: String,
 	match_id: String,
@@ -60,19 +63,22 @@ static func create_event(
 ) -> TelemetryEvent:
 	return TelemetryEvent.new(timestamp_msec, level, match_id, player_id, message, metadata)
 
-static func add_event(event: TelemetryEvent) -> void:
+func add_event(event: TelemetryEvent) -> void:
 	if not _config.enabled or event == null:
 		return
 	_event_batch.append(event)
+	if should_flush() and _config.flush_callback.is_valid():
+		var serialized_batch: Array[Dictionary] = drain_serialized_batch()
+		_config.flush_callback.call(serialized_batch)
 
-static func should_flush() -> bool:
+func should_flush() -> bool:
 	if not _config.enabled:
 		return false
 	if _config.batch_size <= 0:
 		return false
 	return _event_batch.size() >= _config.batch_size
 
-static func drain_serialized_batch() -> Array[Dictionary]:
+func drain_serialized_batch() -> Array[Dictionary]:
 	if not _config.enabled or _event_batch.is_empty():
 		_event_batch.clear()
 		return []
@@ -84,7 +90,7 @@ static func drain_serialized_batch() -> Array[Dictionary]:
 	_event_batch.clear()
 	return serialized_events
 
-static func to_dict(event: TelemetryEvent) -> Dictionary:
+func to_dict(event: TelemetryEvent) -> Dictionary:
 	if event == null:
 		return {}
 	var serialized_metadata: Dictionary = {}
@@ -101,6 +107,6 @@ static func to_dict(event: TelemetryEvent) -> Dictionary:
 		"metadata": serialized_metadata
 	}
 
-static func get_config() -> TelemetryConfig:
+func get_config() -> TelemetryConfig:
 	return _config
 
