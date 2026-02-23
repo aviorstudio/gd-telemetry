@@ -1,7 +1,9 @@
 class_name TelemetryModule
 extends RefCounted
+## Telemetry batching module with configurable flush behavior.
 
 class TelemetryConfig extends RefCounted:
+## Telemetry runtime configuration.
 	var enabled: bool
 	var batch_size: int
 	var batch_interval_s: float
@@ -22,6 +24,7 @@ class TelemetryConfig extends RefCounted:
 		self.flush_callback = flush_callback
 
 class TelemetryEvent extends RefCounted:
+## Typed telemetry event payload.
 	var timestamp_msec: int
 	var level: String
 	var match_id: String
