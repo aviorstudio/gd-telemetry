@@ -3,7 +3,7 @@ extends RefCounted
 ## Telemetry batching module with configurable flush behavior.
 
 class TelemetryConfig extends RefCounted:
-## Telemetry runtime configuration.
+	## Telemetry runtime configuration.
 	var enabled: bool
 	var batch_size: int
 	var batch_interval_s: float
@@ -24,7 +24,7 @@ class TelemetryConfig extends RefCounted:
 		self.flush_callback = flush_callback
 
 class TelemetryEvent extends RefCounted:
-## Typed telemetry event payload.
+	## Typed telemetry event payload.
 	var timestamp_msec: int
 	var level: String
 	var match_id: String
@@ -51,15 +51,18 @@ var _config: TelemetryConfig = TelemetryConfig.new()
 var _event_batch: Array[TelemetryEvent] = []
 var _auto_flush_timer: Timer = null
 
+## Applies telemetry runtime configuration.
 func configure(config: TelemetryConfig) -> void:
 	_config = config if config else TelemetryConfig.new()
 	if _auto_flush_timer and is_instance_valid(_auto_flush_timer):
 		_auto_flush_timer.wait_time = maxf(_config.batch_interval_s, 0.01)
 
+## Returns whether telemetry collection is enabled.
 func is_enabled() -> bool:
 	return _config.enabled
 
-func create_event(
+## Builds a typed telemetry event payload.
+func build_event(
 	timestamp_msec: int,
 	level: String,
 	match_id: String,
@@ -69,6 +72,7 @@ func create_event(
 ) -> TelemetryEvent:
 	return TelemetryEvent.new(timestamp_msec, level, match_id, player_id, message, metadata)
 
+## Adds one event to the current batch and flushes when thresholds are met.
 func add_event(event: TelemetryEvent) -> void:
 	if not _config.enabled or event == null:
 		return
@@ -76,6 +80,7 @@ func add_event(event: TelemetryEvent) -> void:
 	if should_flush() and _config.flush_callback.is_valid():
 		flush()
 
+## Returns true when the in-memory batch has reached flush size.
 func should_flush() -> bool:
 	if not _config.enabled:
 		return false
@@ -83,6 +88,11 @@ func should_flush() -> bool:
 		return false
 	return _event_batch.size() >= _config.batch_size
 
+## Returns the current number of queued events.
+func event_count() -> int:
+	return _event_batch.size()
+
+## Serializes and drains the current batch.
 func drain_serialized_batch() -> Array[Dictionary]:
 	if not _config.enabled or _event_batch.is_empty():
 		_event_batch.clear()
@@ -95,6 +105,7 @@ func drain_serialized_batch() -> Array[Dictionary]:
 	_event_batch.clear()
 	return serialized_events
 
+## Flushes the current batch through the configured callback.
 func flush() -> void:
 	if not _config.enabled:
 		return
@@ -105,6 +116,7 @@ func flush() -> void:
 		return
 	_config.flush_callback.call(serialized_batch)
 
+## Starts timer-based automatic flush using a provided owner node.
 func start_auto_flush(owner: Node) -> void:
 	if owner == null:
 		return
@@ -118,6 +130,7 @@ func start_auto_flush(owner: Node) -> void:
 	timer.timeout.connect(Callable(self, "_on_auto_flush_timeout"))
 	_auto_flush_timer = timer
 
+## Stops timer-based automatic flush.
 func stop_auto_flush() -> void:
 	if _auto_flush_timer and is_instance_valid(_auto_flush_timer):
 		_auto_flush_timer.stop()
@@ -127,6 +140,7 @@ func stop_auto_flush() -> void:
 func _on_auto_flush_timeout() -> void:
 	flush()
 
+## Serializes one telemetry event as a dictionary payload.
 func to_dict(event: TelemetryEvent) -> Dictionary:
 	if event == null:
 		return {}
@@ -144,6 +158,7 @@ func to_dict(event: TelemetryEvent) -> Dictionary:
 		"metadata": serialized_metadata
 	}
 
+## Returns the current telemetry configuration object.
 func get_config() -> TelemetryConfig:
 	return _config
 
