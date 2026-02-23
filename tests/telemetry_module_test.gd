@@ -30,7 +30,9 @@ func _test_auto_flush_lifecycle(failures: Array[String]) -> void:
 	get_root().add_child(owner)
 	telemetry.start_auto_flush(owner)
 
-	telemetry.add_event(telemetry.create_event(Time.get_ticks_msec(), "info", "m1", "p1", "message", {"ok": true}))
+	telemetry.add_event(telemetry.build_event(Time.get_ticks_msec(), "info", "m1", "p1", "message", {"ok": true}))
+	if telemetry.event_count() != 1:
+		failures.append("Expected event_count() to report queued events")
 	await create_timer(0.05).timeout
 
 	if _flush_call_count <= 0:
@@ -39,7 +41,7 @@ func _test_auto_flush_lifecycle(failures: Array[String]) -> void:
 		failures.append("Expected flushed batch to include queued event")
 
 	telemetry.stop_auto_flush()
-	telemetry.add_event(telemetry.create_event(Time.get_ticks_msec(), "info", "m1", "p1", "message2", {}))
+	telemetry.add_event(telemetry.build_event(Time.get_ticks_msec(), "info", "m1", "p1", "message2", {}))
 	var calls_before_wait: int = _flush_call_count
 	await create_timer(0.03).timeout
 	if _flush_call_count != calls_before_wait:

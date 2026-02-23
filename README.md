@@ -17,7 +17,7 @@ const TelemetryModule = preload("res://addons/@aviorstudio_gd-telemetry/src/tele
 
 var telemetry := TelemetryModule.new()
 telemetry.configure(TelemetryModule.TelemetryConfig.new(true, 50, 0.5))
-telemetry.add_event(telemetry.create_event(Time.get_ticks_msec(), "INFO", "match-1", "player-1", "connected", {}))
+telemetry.add_event(telemetry.build_event(Time.get_ticks_msec(), "INFO", "match-1", "player-1", "connected", {}))
 ```
 
 ## API Reference
