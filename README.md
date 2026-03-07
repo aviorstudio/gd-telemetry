@@ -2,6 +2,8 @@
 
 Telemetry event batching for Godot 4 with configurable flush behavior.
 
+This addon is intentionally focused on event queueing/flush boundaries.
+
 ## Installation
 
 ### Via gdpm
@@ -25,6 +27,11 @@ telemetry.add_event(telemetry.build_event(Time.get_ticks_msec(), "INFO", "match-
 - `TelemetryConfig`: enable flag, batch size, interval, and flush callback.
 - `TelemetryEvent`: typed telemetry payload container.
 - `add_event`, `should_flush`, `drain_serialized_batch`, `flush`: batching and output pipeline.
+
+## Scope Boundary
+
+- In scope: telemetry event modeling, batching, and flush callback invocation.
+- Out of scope: destination-specific transport clients and product analytics orchestration.
 
 ## Configuration
 
