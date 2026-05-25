@@ -1,6 +1,6 @@
 extends SceneTree
 
-const TelemetryModule = preload("res://src/telemetry_module.gd")
+const TelemetryModule = preload("res://addon/src/telemetry_module.gd")
 
 var _flush_call_count: int = 0
 var _last_batch_size: int = 0
