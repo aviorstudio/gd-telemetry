@@ -10,7 +10,7 @@ This addon is intentionally focused on event queueing/flush boundaries.
 `gdpm install @aviorstudio/gd-telemetry`
 
 ### Manual
-Copy this directory into `addons/@aviorstudio_gd-telemetry/` and enable the plugin.
+Copy `addon/` into `addons/@aviorstudio_gd-telemetry/` and enable the plugin.
 
 ## Quick Start
 
