@@ -46,13 +46,13 @@ jobs:
           repo_name="${GITHUB_REPOSITORY#*/}"
           tag_name="${TAG_NAME}"
           addon_dir="@${repo_owner}_${repo_name}"
-          package_root="dist/addons/${addon_dir}"
+          package_root="dist/${addon_dir}"
           mkdir -p "$package_root"
           cp addon/plugin.cfg addon/plugin.gd "$package_root/"
           cp addon/*.uid "$package_root/" 2>/dev/null || true
           if [ -f addon/autoload.gd ]; then cp addon/autoload.gd "$package_root/"; fi
           if [ -d addon/src ]; then cp -R addon/src "$package_root/"; fi
-          (cd dist && zip -r "${repo_name}-${tag_name}.zip" addons)
+          (cd dist && zip -r "${repo_name}-${tag_name}.zip" "${addon_dir}")
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
