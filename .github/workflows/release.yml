@@ -18,16 +18,14 @@ jobs:
           set -euo pipefail
           test -f addon/plugin.cfg
           repo_owner="${GITHUB_REPOSITORY%%/*}"
-          repo_name="${GITHUB_REPOSITORY#*/}"
-          tag_name="${{ github.event.release.tag_name }}"
-          addon_dir="@${repo_owner}_${repo_name}"
+          addon_dir="@${repo_owner}_${GITHUB_REPOSITORY#*/}"
           package_root="dist/${addon_dir}"
           mkdir -p "$package_root"
           cp addon/plugin.cfg addon/plugin.gd "$package_root/"
           cp addon/*.uid "$package_root/" 2>/dev/null || true
           if [ -f addon/autoload.gd ]; then cp addon/autoload.gd "$package_root/"; fi
           if [ -d addon/src ]; then cp -R addon/src "$package_root/"; fi
-          (cd dist && zip -r "${repo_name}-${tag_name}.zip" "${addon_dir}")
+          (cd "$package_root" && zip -r "../${addon_dir}.zip" .)
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
