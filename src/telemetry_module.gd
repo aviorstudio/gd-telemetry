@@ -27,23 +27,23 @@ class TelemetryEvent extends RefCounted:
 	## Typed telemetry event payload.
 	var timestamp_msec: int
 	var level: String
-	var match_id: String
-	var player_id: String
+	var context_id: String
+	var subject_id: String
 	var message: String
 	var metadata: Dictionary
 
 	func _init(
 		timestamp_msec: int = 0,
 		level: String = "",
-		match_id: String = "",
-		player_id: String = "",
+		context_id: String = "",
+		subject_id: String = "",
 		message: String = "",
 		metadata: Dictionary = {}
 	) -> void:
 		self.timestamp_msec = timestamp_msec
 		self.level = level
-		self.match_id = match_id
-		self.player_id = player_id
+		self.context_id = context_id
+		self.subject_id = subject_id
 		self.message = message
 		self.metadata = metadata.duplicate(true)
 
@@ -65,12 +65,12 @@ func is_enabled() -> bool:
 func build_event(
 	timestamp_msec: int,
 	level: String,
-	match_id: String,
-	player_id: String,
+	context_id: String,
+	subject_id: String,
 	message: String,
 	metadata: Dictionary
 ) -> TelemetryEvent:
-	return TelemetryEvent.new(timestamp_msec, level, match_id, player_id, message, metadata)
+	return TelemetryEvent.new(timestamp_msec, level, context_id, subject_id, message, metadata)
 
 ## Adds one event to the current batch and flushes when thresholds are met.
 func add_event(event: TelemetryEvent) -> void:
@@ -152,8 +152,8 @@ func to_dict(event: TelemetryEvent) -> Dictionary:
 	return {
 		"timestamp": event.timestamp_msec,
 		"level": event.level,
-		"match_id": event.match_id,
-		"player_id": event.player_id,
+		"context_id": event.context_id,
+		"subject_id": event.subject_id,
 		"message": event.message,
 		"metadata": serialized_metadata
 	}
@@ -161,4 +161,3 @@ func to_dict(event: TelemetryEvent) -> Dictionary:
 ## Returns the current telemetry configuration object.
 func get_config() -> TelemetryConfig:
 	return _config
-
