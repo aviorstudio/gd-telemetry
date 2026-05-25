@@ -1,4 +1,4 @@
 # Changelog
 
-## 0.1.0
-- initial hardened release baseline.
+## 0.0.1
+- Initial hardened release baseline.
