@@ -6,9 +6,9 @@ Use this addon to collect structured game events and flush them through your own
 
 ## Installation
 
-### Via gdpm
+### Via gdam
 
-`gdpm install @aviorstudio/gd-telemetry`
+`gdam install @aviorstudio/gd-telemetry`
 
 ### Manual
 
