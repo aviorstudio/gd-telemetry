@@ -32,3 +32,29 @@ jobs:
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: dist/*.zip
+
+      - name: Install GDAM
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL https://raw.githubusercontent.com/aviorstudio/gdam/main/scripts/install_cli.sh | INSTALL_DIR="$RUNNER_TEMP/bin" sh
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Publish to GDAM
+        env:
+          GDAM_SECRET_KEY: ${{ secrets.GDAM_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GDAM_SECRET_KEY:-}" ]; then
+            echo 'Missing required secret: GDAM_SECRET_KEY' >&2
+            exit 1
+          fi
+          tag="${{ github.event.release.tag_name }}"
+          version="${tag#v}"
+          if [ "$version" = "$tag" ]; then
+            echo 'Release tag must look like v1.2.3.' >&2
+            exit 1
+          fi
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          asset_name="@${GITHUB_REPOSITORY/\//_}.zip"
+          gdam publish "@aviorstudio/${repo_name}" "$version" "$tag" "$asset_name"
