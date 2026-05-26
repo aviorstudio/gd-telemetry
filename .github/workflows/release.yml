@@ -1,17 +1,67 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
+
+concurrency: release-${{ github.repository }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine release version
+        id: release
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo 'Run releases from the main branch.' >&2
+            exit 1
+          fi
+          git fetch --tags --force
+          latest="$(git tag --list 'v[0-9]*' | sed -E 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+          if [ -z "$latest" ]; then
+            version="0.0.1"
+          else
+            IFS=. read -r major minor patch <<< "$latest"
+            case "$BUMP" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              patch) patch=$((patch + 1)) ;;
+              *) echo "Unsupported bump: $BUMP" >&2; exit 1 ;;
+            esac
+            version="${major}.${minor}.${patch}"
+          fi
+          tag="v${version}"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag already exists: $tag" >&2
+            exit 1
+          fi
+          plugin_version="$(sed -n -E 's/^version="([^"]+)"/\1/p' addon/plugin.cfg | head -n 1)"
+          if [ "$plugin_version" != "$version" ]; then
+            echo "addon/plugin.cfg version is $plugin_version, but the next $BUMP release is $version." >&2
+            echo "Update addon/plugin.cfg to version=\"$version\", commit it, then rerun this workflow." >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Package addon
         run: |
@@ -28,10 +78,10 @@ jobs:
           (cd "$package_root" && zip -r "../${addon_dir}.zip" .)
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: dist/*.zip
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: gh release create "$TAG" dist/*.zip --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG"
 
       - name: Install GDAM
         run: |
@@ -43,18 +93,14 @@ jobs:
       - name: Publish to GDAM
         env:
           GDAM_SECRET_KEY: ${{ secrets.GDAM_SECRET_KEY }}
+          VERSION: ${{ steps.release.outputs.version }}
+          TAG: ${{ steps.release.outputs.tag }}
         run: |
           set -euo pipefail
           if [ -z "${GDAM_SECRET_KEY:-}" ]; then
             echo 'Missing required secret: GDAM_SECRET_KEY' >&2
             exit 1
           fi
-          tag="${{ github.event.release.tag_name }}"
-          version="${tag#v}"
-          if [ "$version" = "$tag" ]; then
-            echo 'Release tag must look like v1.2.3.' >&2
-            exit 1
-          fi
           repo_name="${GITHUB_REPOSITORY#*/}"
           asset_name="@${GITHUB_REPOSITORY/\//_}.zip"
-          gdam publish "@aviorstudio/${repo_name}" "$version" "$tag" "$asset_name"
+          gdam publish "@aviorstudio/${repo_name}" "$VERSION" "$TAG" "$asset_name"
