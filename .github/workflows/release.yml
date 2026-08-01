@@ -84,10 +84,10 @@ jobs:
         run: gh release create "$TAG" dist/*.zip --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG"
 
       - name: Install GDAM
-        uses: aviorstudio/gdam-actions/install@v0.1.2
+        uses: aviorstudio/gdam-actions/install@v0.0.1
 
       - name: Publish to GDAM
-        uses: aviorstudio/gdam-actions/publish@v0.1.2
+        uses: aviorstudio/gdam-actions/publish@v0.0.1
         with:
           version: ${{ steps.release.outputs.version }}
           tag: ${{ steps.release.outputs.tag }}
