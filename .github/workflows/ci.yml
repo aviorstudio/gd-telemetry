@@ -35,7 +35,7 @@ jobs:
       # Third-party actions are pinned by SHA, with the tag in a trailing
       # comment so the version is still readable. A tag is a moving reference:
       # whoever can move it can run code in this job.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Test
         uses: ./.github/actions/test
