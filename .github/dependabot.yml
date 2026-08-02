@@ -1,0 +1,25 @@
+# Keeps the pinned `uses:` refs in .github/workflows and .github/actions current.
+#
+# Every third-party action here is pinned to a commit SHA rather than a tag,
+# which is the point: a tag is a moving reference, and whoever can move it can
+# run code in these jobs. The cost of a SHA is that nothing tells you when it
+# has gone stale -- a tag at least reads as a version. This is the thing that
+# tells you.
+#
+# Grouped into one pull request rather than one per action. These are all the
+# same kind of change, and a pin bump arriving alone every few days is how pin
+# bumps stop being read at all.
+#
+# Scoped to github-actions. The aviorstudio/* and nicodes/* refs stay on version
+# tags by decision, and dependabot will offer those as version bumps rather than
+# opaque SHA changes.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
