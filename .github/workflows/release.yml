@@ -20,8 +20,11 @@ concurrency: release-${{ github.repository }}
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Bounded, so a step that hangs fails here rather than sitting until the
+    # runner's own timeout hours later.
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -62,6 +65,14 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      # The same checks CI runs, from the same definition. This workflow used
+      # to package and publish without running any of them -- the only thing
+      # between a broken commit and the GDAM registry was whether somebody had
+      # looked at CI. Running them here against this exact commit is the point:
+      # CI passing on this SHA earlier is a claim about that run.
+      - name: Test
+        uses: ./.github/actions/test
 
       - name: Package addon
         run: |
