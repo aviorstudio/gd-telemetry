@@ -6,13 +6,9 @@
 # has gone stale -- a tag at least reads as a version. This is the thing that
 # tells you.
 #
-# Grouped into one pull request rather than one per action. These are all the
-# same kind of change, and a pin bump arriving alone every few days is how pin
-# bumps stop being read at all.
-#
-# Scoped to github-actions. The aviorstudio/* and nicodes/* refs stay on version
-# tags by decision, and dependabot will offer those as version bumps rather than
-# opaque SHA changes.
+# Minor and patch updates are grouped: they share the same risk profile and CI
+# can merge them without ceremony. Major updates are deliberately excluded, so
+# Dependabot opens one reviewable pull request for each breaking-change boundary.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -20,6 +16,9 @@ updates:
     schedule:
       interval: weekly
     groups:
-      actions:
+      actions-minor-patch:
         patterns:
           - "*"
+        update-types:
+          - minor
+          - patch
