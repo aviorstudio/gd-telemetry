@@ -7,99 +7,90 @@ on:
         description: Version bump
         required: true
         type: choice
-        options:
-          - patch
-          - minor
-          - major
+        options: [patch, minor, major]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency: release-${{ github.repository }}
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
-    # Bounded, so a step that hangs fails here rather than sitting until the
-    # runner's own timeout hours later.
     timeout-minutes: 20
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
-
       - name: Determine release version
         id: release
         env:
           BUMP: ${{ inputs.bump }}
         run: |
           set -euo pipefail
-          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo 'Run releases from the main branch.' >&2
-            exit 1
-          fi
+          test "$GITHUB_REF" = refs/heads/main || { echo 'Run releases from main.' >&2; exit 1; }
           git fetch --tags --force
           latest="$(git tag --list 'v[0-9]*' | sed -E 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
           if [ -z "$latest" ]; then
-            version="0.0.1"
+            version=0.0.1
           else
             IFS=. read -r major minor patch <<< "$latest"
             case "$BUMP" in
               major) major=$((major + 1)); minor=0; patch=0 ;;
               minor) minor=$((minor + 1)); patch=0 ;;
               patch) patch=$((patch + 1)) ;;
-              *) echo "Unsupported bump: $BUMP" >&2; exit 1 ;;
+              *) exit 1 ;;
             esac
-            version="${major}.${minor}.${patch}"
+            version="$major.$minor.$patch"
           fi
-          tag="v${version}"
-          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-            echo "Tag already exists: $tag" >&2
-            exit 1
-          fi
+          tag="v$version"
+          ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null
           plugin_version="$(sed -n -E 's/^version="([^"]+)"/\1/p' addon/plugin.cfg | head -n 1)"
-          if [ "$plugin_version" != "$version" ]; then
-            echo "addon/plugin.cfg version is $plugin_version, but the next $BUMP release is $version." >&2
-            echo "Update addon/plugin.cfg to version=\"$version\", commit it, then rerun this workflow." >&2
-            exit 1
-          fi
+          test "$plugin_version" = "$version" || { echo "plugin.cfg is $plugin_version; expected $version" >&2; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-
-      # The same checks CI runs, from the same definition. This workflow used
-      # to package and publish without running any of them -- the only thing
-      # between a broken commit and the GDAM registry was whether somebody had
-      # looked at CI. Running them here against this exact commit is the point:
-      # CI passing on this SHA earlier is a claim about that run.
-      - name: Test
+      - name: Test exact release commit and package bytes
         uses: ./.github/actions/test
+      - name: Record tested artifact identity
+        run: (cd dist && sha256sum @aviorstudio_gd-telemetry.zip > @aviorstudio_gd-telemetry.zip.sha256)
+      - name: Preserve tested bytes
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ steps.release.outputs.tag }}
+          path: |
+            dist/@aviorstudio_gd-telemetry.zip
+            dist/@aviorstudio_gd-telemetry.zip.sha256
+            dist/installed-tree.sha256
+          if-no-files-found: error
 
-      - name: Package addon
-        run: |
-          set -euo pipefail
-          test -f addon/plugin.cfg
-          repo_owner="${GITHUB_REPOSITORY%%/*}"
-          addon_dir="@${repo_owner}_${GITHUB_REPOSITORY#*/}"
-          package_root="dist/${addon_dir}"
-          mkdir -p "$package_root"
-          cp addon/plugin.cfg addon/plugin.gd "$package_root/"
-          cp addon/*.uid "$package_root/" 2>/dev/null || true
-          if [ -f addon/autoload.gd ]; then cp addon/autoload.gd "$package_root/"; fi
-          if [ -d addon/src ]; then cp -R addon/src "$package_root/"; fi
-          (cd "$package_root" && zip -r "../${addon_dir}.zip" .)
-
-      - name: Create GitHub Release
+  publish:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Recover tested bytes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-${{ needs.prepare.outputs.tag }}
+          path: dist
+      - name: Verify tested bytes
+        run: (cd dist && sha256sum --check @aviorstudio_gd-telemetry.zip.sha256)
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.release.outputs.tag }}
-        run: gh release create "$TAG" dist/*.zip --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG"
-
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release create "$TAG" dist/@aviorstudio_gd-telemetry.zip dist/@aviorstudio_gd-telemetry.zip.sha256 dist/installed-tree.sha256 --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG from tested bytes"
       - name: Install GDAM
-        uses: aviorstudio/gdam-actions/install@v0.0.2
-
+        uses: aviorstudio/gdam-actions/install@d735444eb470194585def44521d5d91df2260e63 # v0.0.2
       - name: Publish to GDAM
-        uses: aviorstudio/gdam-actions/publish@v0.0.2
+        uses: aviorstudio/gdam-actions/publish@d735444eb470194585def44521d5d91df2260e63 # v0.0.2
         with:
-          version: ${{ steps.release.outputs.version }}
-          tag: ${{ steps.release.outputs.tag }}
+          version: ${{ needs.prepare.outputs.version }}
+          tag: ${{ needs.prepare.outputs.tag }}
           secret-key: ${{ secrets.GDAM_SECRET_KEY }}
