@@ -91,6 +91,5 @@ jobs:
       - name: Publish to GDAM
         uses: aviorstudio/gdam-actions/publish@d735444eb470194585def44521d5d91df2260e63 # v0.0.2
         with:
-          version: ${{ needs.prepare.outputs.version }}
           tag: ${{ needs.prepare.outputs.tag }}
           secret-key: ${{ secrets.GDAM_SECRET_KEY }}
