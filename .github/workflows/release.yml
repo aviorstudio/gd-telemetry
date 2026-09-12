@@ -55,7 +55,7 @@ jobs:
       - name: Test exact release commit and package bytes
         uses: ./.github/actions/test
       - name: Record tested artifact identity
-        run: sha256sum dist/@aviorstudio_gd-telemetry.zip > dist/@aviorstudio_gd-telemetry.zip.sha256
+        run: (cd dist && sha256sum @aviorstudio_gd-telemetry.zip > @aviorstudio_gd-telemetry.zip.sha256)
       - name: Preserve tested bytes
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
