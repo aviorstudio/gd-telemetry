@@ -119,6 +119,11 @@ and exercise the installed ZIP through plugin enable/restart, smoke,
 disable/restart lifecycle checks. Godot downloads are checksum-verified and
 publication uploads the exact ZIP tested by the release job.
 
+**Correction (fieldsofrevik#156):** GDAM publication passes only the
+publish action's supported tag and secret inputs. The v0.0.2 run also passed a
+redundant unsupported `version` input (ignored with a warning); v0.0.3 removes
+that false workflow contract and republishes freshly tested bytes.
+
 ## License
 
 MIT
