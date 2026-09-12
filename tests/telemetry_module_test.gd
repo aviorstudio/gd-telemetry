@@ -10,6 +10,7 @@ func _initialize() -> void:
 	await _test_auto_flush_lifecycle(failures)
 
 	if failures.is_empty():
+		print("TEST_REACHED:telemetry_module_test.gd")
 		print("PASS gd-telemetry telemetry_module_test")
 		quit(0)
 		return

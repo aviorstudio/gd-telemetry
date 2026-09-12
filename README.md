@@ -83,7 +83,12 @@ Run locally with:
 ./tests/test.sh
 ```
 
-CI runs the same test script when available.
+**Correction (fieldsofrevik#156):** CI and release now require the Godot
+4.7.2 suite rather than conditionally skipping a missing script. They also run
+versioned negative runner controls, build and inspect the closed-manifest ZIP,
+and exercise the installed ZIP through plugin enable/restart, smoke,
+disable/restart lifecycle checks. Godot downloads are checksum-verified and
+publication uploads the exact ZIP tested by the release job.
 
 ## License
 
