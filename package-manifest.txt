@@ -1,0 +1,5 @@
+plugin.cfg
+plugin.gd
+plugin.gd.uid
+src/telemetry_module.gd
+src/telemetry_module.gd.uid

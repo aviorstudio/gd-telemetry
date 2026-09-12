@@ -20,7 +20,9 @@ Copy `addon/` into `res://addons/@aviorstudio_gd-telemetry/` and enable the plug
 const TelemetryModule = preload("res://addons/@aviorstudio_gd-telemetry/src/telemetry_module.gd")
 
 var telemetry := TelemetryModule.new()
-telemetry.configure(TelemetryModule.TelemetryConfig.new(true, 50, 0.5))
+telemetry.configure(TelemetryModule.TelemetryConfig.new(
+	true, 50, 0.5, 50, Callable(self, "_send_batch_to_backend")
+))
 
 telemetry.add_event(telemetry.build_event(
 	Time.get_ticks_msec(),
@@ -32,8 +34,13 @@ telemetry.add_event(telemetry.build_event(
 ))
 
 if telemetry.should_flush():
-	var batch: Array = telemetry.drain_serialized_batch()
-	_send_batch_to_backend(batch)
+	var outcome := await telemetry.flush()
+	if outcome != TelemetryModule.FlushResult.ACKNOWLEDGED:
+		push_warning("Telemetry remains queued: %s" % outcome)
+
+func _send_batch_to_backend(batch: Array[Dictionary]) -> bool:
+	# Return true only after the transport acknowledges this batch.
+	return await transport.send(batch)
 ```
 
 ## Event Shape
@@ -54,7 +61,29 @@ Serialized events use this dictionary shape:
 - `build_event`: create consistent events.
 - `add_event`: queue events.
 - `should_flush`: check batch size/time thresholds.
-- `drain_serialized_batch` / `flush`: hand events to your transport layer.
+- `flush`: deliver one FIFO batch and remove it only after a boolean `true`
+  callback acknowledgement.
+- Explicit `AddResult`, `FlushResult`, and `counters()` diagnostics.
+
+## Delivery And Backpressure Contract
+
+- Memory only; this addon does not provide durable delivery.
+- The maximum and default cap is 1,000 events across queued and in-flight data. At
+  capacity, the oldest queued event is dropped for a new event. An in-flight
+  batch is never changed; if it alone consumes capacity, the newest event is
+  rejected. Both cases have separate counters and `add_event` results.
+- One batch may be in flight. Concurrent `flush` calls return `BUSY`.
+- A callback returns or asynchronously resolves to boolean `true` to
+  acknowledge. `false`, an invalid return, or a 10 second timeout fails an
+  attempt. Defaults are three retries after the initial attempt with capped
+  exponential delays of 0.5, 1, and 2 seconds.
+- A permanently unserializable head event remains queued and reports
+  `SERIALIZATION_FAILED`; the caller may explicitly discard it with
+  `discard_oldest_event()`.
+- `shutdown(true)` stops the owned timer, attempts a final flush, and returns
+  the observable outcome. If another flush is pending, shutdown cancels it,
+  restores its batch, and returns `CANCELLED`. No new events are accepted
+  afterward.
 
 ## Notes
 
@@ -83,7 +112,12 @@ Run locally with:
 ./tests/test.sh
 ```
 
-CI runs the same test script when available.
+**Correction (fieldsofrevik#156):** CI and release now require the Godot
+4.7.2 suite rather than conditionally skipping a missing script. They also run
+versioned negative runner controls, build and inspect the closed-manifest ZIP,
+and exercise the installed ZIP through plugin enable/restart, smoke,
+disable/restart lifecycle checks. Godot downloads are checksum-verified and
+publication uploads the exact ZIP tested by the release job.
 
 ## License
 
