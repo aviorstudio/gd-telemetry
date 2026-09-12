@@ -27,13 +27,16 @@ runs:
       run: |
         set -euo pipefail
         test -f addon/plugin.cfg
+        python3 scripts/package_addon.py build dist/@aviorstudio_gd-telemetry.zip
+        python3 scripts/package_addon.py verify dist/@aviorstudio_gd-telemetry.zip
 
     # Godot comes from a LOCAL action, copied from the one castledrop and prizm
     # carry. The version used to be a download URL written into ci.yml -- the
     # engine this addon is tested against lived in workflow YAML.
     - uses: ./.github/actions/setup-godot
       with:
-        godot-version: '4.4.1'
+        godot-version: '4.7.2'
+        godot-sha256: 'cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4'
 
     # No `if: hashFiles(...)` guard. This step used to skip itself when
     # tests/test.sh was absent, which is indistinguishable from the script being
@@ -41,4 +44,10 @@ runs:
     # suite, so the step runs unconditionally and a missing script now fails.
     - name: Godot tests
       shell: bash
-      run: ./tests/test.sh
+      run: |
+        ./tests/gate_controls.sh
+        ./tests/test.sh
+
+    - name: Packaged addon install and editor lifecycle
+      shell: bash
+      run: ./tests/package_controls.sh dist/@aviorstudio_gd-telemetry.zip
