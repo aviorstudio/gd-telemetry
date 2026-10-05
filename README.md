@@ -1,3 +1,5 @@
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 7d3ea14e62ebbf1b880404b266689d74b27c68e0dfdd4337d1fc2e9a67ed4839 -->
+
 # gd-telemetry
 
 Build and batch telemetry events in Godot 4.
@@ -91,39 +93,7 @@ Serialized events use this dictionary shape:
 - This addon does not choose a telemetry vendor or network transport.
 - Avoid sending private user data unless your game has explicit consent and retention policy.
 
-## Repository Layout
-
-- `addon/`: Godot plugin source packaged for GDAM and manual installation.
-- `addon/plugin.cfg`: plugin name, version, description, and entry script.
-- `addon/src/`: reusable GDScript modules.
-- `tests/`: Godot test project/scripts for addon behavior.
-- `.github/workflows/ci.yml`: validates package shape and runs tests.
-- `.github/workflows/release.yml`: creates GitHub release ZIPs and publishes to GDAM.
-
-## Versioning And Releases
-
-The version in `addon/plugin.cfg` is the addon package version. Releases are created from `main` with the manual release workflow and plain semver tags like `v0.0.1`; the workflow verifies `plugin.cfg`, builds `@aviorstudio_gd-telemetry.zip`, and publishes `@aviorstudio/gd-telemetry` to GDAM.
-
-## Testing
-
-Run locally with:
-
-```sh
-./tests/test.sh
-```
-
-**Correction (fieldsofrevik#156):** CI and release now require the Godot
-4.7.2 suite rather than conditionally skipping a missing script. They also run
-versioned negative runner controls, build and inspect the closed-manifest ZIP,
-and exercise the installed ZIP through plugin enable/restart, smoke,
-disable/restart lifecycle checks. Godot downloads are checksum-verified and
-publication uploads the exact ZIP tested by the release job.
-
-**Correction (fieldsofrevik#156):** GDAM publication passes only the
-publish action's supported tag and secret inputs. The v0.0.2 run also passed a
-redundant unsupported `version` input (ignored with a warning); v0.0.3 removes
-that false workflow contract and republishes freshly tested bytes.
 
 ## License
 
-MIT
+See `LICENSE`.
