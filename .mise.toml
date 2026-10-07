@@ -1,0 +1,3 @@
+[tools]
+python = "3.13.11"
+"http:cicd-engineering" = { version = "0.13.0", url = "https://github.com/nicodes/tools/releases/download/v{{ version }}/cicd-engineering-v{{ version }}.tar.gz", checksum = "sha256:4c6014b153ce0d4c3754fbe02f3574989a67e4886a45e254262843a314018d8c" }

@@ -37,5 +37,7 @@ jobs:
       # whoever can move it can run code in this job.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Validate developer profile and workflow controls
+        uses: nicodes/tools/workflow-standards@cf0e560c9bbb888488191fcce03409b6c6fbdc28 # v0.13.0
       - name: Test
         uses: ./.github/actions/test

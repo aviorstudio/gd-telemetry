@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "profile": "godot-addon",
+  "commands": {
+    "install": [
+      "make",
+      "install"
+    ],
+    "lint": {
+      "unsupported": "No dedicated source lint gate; behavioral and exact-package gates are mandatory in make check."
+    },
+    "test": [
+      "make",
+      "test"
+    ],
+    "build": [
+      "make",
+      "build"
+    ],
+    "check": [
+      "make",
+      "check"
+    ],
+    "clean": [
+      "make",
+      "clean"
+    ],
+    "dev": {
+      "unsupported": "Addon requires a consuming Godot project; no standalone development service."
+    },
+    "stop": {
+      "unsupported": "Addon requires a consuming Godot project; no standalone development service."
+    }
+  }
+}
