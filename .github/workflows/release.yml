@@ -90,7 +90,7 @@ jobs:
           TAG: ${{ needs.prepare.outputs.tag }}
         run: gh release create "$TAG" dist/@aviorstudio_gd-telemetry.zip dist/@aviorstudio_gd-telemetry.zip.sha256 dist/installed-tree.sha256 --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG from tested bytes"
       - name: Publish to GDAM
-        uses: aviorstudio/gdam-actions/publish@af83a304fd0b3fcca5103e55118d6a88515d345e # v0.5.1
+        uses: aviorstudio/gdam-actions/publish@6677226d9353df1d410f3e7f5075e13b3b7d5308 # v0.5.1
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           api-key: ${{ secrets.GDAM_API_KEY }}
