@@ -1,4 +1,4 @@
-name: CI
+name: "Build & Test"
 
 # Every pull request and every merge to main: test, on one runner.
 #
