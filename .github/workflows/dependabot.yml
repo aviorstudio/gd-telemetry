@@ -1,4 +1,4 @@
-name: Dependabot
+name: "Dependency Policy"
 
 # Dependabot's minor and patch action updates are grouped in dependabot.yml.
 # Once the required CI check passes, this marks only those low-risk updates for
@@ -12,11 +12,12 @@ permissions:
 
 jobs:
   auto-merge:
+    name: "Apply dependency policy"
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
-      - name: Read Dependabot metadata
+      - name: "Read dependency metadata"
         id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         with:
