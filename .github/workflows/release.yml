@@ -16,13 +16,15 @@ concurrency: release-${{ github.repository }}
 
 jobs:
   prepare:
+    name: "Prepare release"
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 20
     outputs:
       version: ${{ steps.release.outputs.version }}
       tag: ${{ steps.release.outputs.tag }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: "Check out source"
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - name: Determine release version
@@ -55,11 +57,11 @@ jobs:
           test "$plugin_version" = "$version" || { echo "plugin.cfg is $plugin_version; expected $version" >&2; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-      - name: Test exact release commit and package bytes
+      - name: "Test"
         uses: ./.github/actions/test
       - name: Record tested artifact identity
         run: (cd dist && sha256sum @aviorstudio_gd-telemetry.zip > @aviorstudio_gd-telemetry.zip.sha256)
-      - name: Preserve tested bytes
+      - name: "Upload artifacts"
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-${{ steps.release.outputs.tag }}
@@ -70,14 +72,16 @@ jobs:
           if-no-files-found: error
 
   publish:
+    name: "Publish release"
     needs: prepare
     runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Recover tested bytes
+      - name: "Check out source"
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: "Download artifacts"
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: release-${{ needs.prepare.outputs.tag }}
@@ -89,7 +93,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.prepare.outputs.tag }}
         run: gh release create "$TAG" dist/@aviorstudio_gd-telemetry.zip dist/@aviorstudio_gd-telemetry.zip.sha256 dist/installed-tree.sha256 --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG from tested bytes"
-      - name: Publish to GDAM
+      - name: "Publish addon"
         uses: aviorstudio/gdam-actions/publish@6677226d9353df1d410f3e7f5075e13b3b7d5308 # v0.5.1
         with:
           tag: ${{ needs.prepare.outputs.tag }}
