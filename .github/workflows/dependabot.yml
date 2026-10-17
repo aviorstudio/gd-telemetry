@@ -1,33 +1,25 @@
-name: "Dependency Policy"
-
-# Dependabot's minor and patch action updates are grouped in dependabot.yml.
-# Once the required CI check passes, this marks only those low-risk updates for
-# squash merge. Major updates never satisfy the condition and remain manual.
+name: Dependency Policy
 on:
-  pull_request:
-
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_run:
+    workflows: ["Build & Test"]
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '1 6 * * *'
 permissions:
   contents: write
   pull-requests: write
-
+  actions: write
+  checks: read
+  statuses: read
+concurrency:
+  group: dependency-policy
+  cancel-in-progress: false
 jobs:
   auto-merge:
-    name: "Apply dependency policy"
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-    timeout-minutes: 10
-    steps:
-      - name: "Read dependency metadata"
-        id: metadata
-        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Enable auto-merge for minor and patch updates
-        if: >-
-          steps.metadata.outputs.update-type == 'version-update:semver-minor' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+    name: Apply dependency policy
+    uses: nicodes/tools/.github/workflows/dependency-merge.yml@ca747e13a51f301f51635c262d883d57d6084ae3 # v0.27.1
+    with:
+      runner: blacksmith-2vcpu-ubuntu-2404

@@ -37,9 +37,22 @@ jobs:
       # comment so the version is still readable. A tag is a moving reference:
       # whoever can move it can run code in this job.
       - name: "Check out source"
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Record tested integration identity
+        if: github.event_name == 'pull_request'
+        uses: nicodes/tools/integration-identity@ca747e13a51f301f51635c262d883d57d6084ae3 # v0.27.1
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+      - name: Upload artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fleet-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/fleet-integration.json
+          if-no-files-found: error
+          retention-days: 7
       - name: "Validate workflow standards"
-        uses: nicodes/tools/workflow-standards@61962f8712fd852d932b99284b6993e123f6ae41 # v0.15.0
+        uses: nicodes/tools/workflow-standards@ca747e13a51f301f51635c262d883d57d6084ae3 # v0.27.1
       - name: Test
         uses: ./.github/actions/test

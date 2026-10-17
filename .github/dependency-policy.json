@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "mode": "auto",
+  "ci_workflow": "ci.yml",
+  "required_checks": [
+    "Test"
+  ],
+  "integration_job": "ci",
+  "dispatch_workflow": "ci.yml",
+  "max_group_size": 10,
+  "managed_dependencies": [
+    "nicodes/tools/*",
+    "nicodes/cicd/*",
+    "nicodes/komizo-actions/*",
+    "aviorstudio/gdam-actions/*"
+  ],
+  "sensitive_dependencies": [
+    "*clerk*",
+    "*pocketbase*",
+    "*crypto*",
+    "*jsonwebtoken*",
+    "*jose*",
+    "*oauth*",
+    "*openid*",
+    "*passport*",
+    "*bcrypt*",
+    "*argon2*",
+    "@noble/*",
+    "*prisma*",
+    "*drizzle*",
+    "*migrate*"
+  ]
+}
