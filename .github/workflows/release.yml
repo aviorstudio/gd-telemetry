@@ -17,7 +17,7 @@ concurrency: release-${{ github.repository }}
 jobs:
   prepare:
     name: "Prepare release"
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
       version: ${{ steps.release.outputs.version }}
@@ -74,7 +74,7 @@ jobs:
   publish:
     name: "Publish release"
     needs: prepare
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: write
