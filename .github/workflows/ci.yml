@@ -1,58 +1,56 @@
-name: "Build & Test"
-
-# Every pull request and every merge to main: test, on one runner.
-#
-# There is no build. A Godot addon is GDScript in a directory -- what a release
-# ships is the same files, zipped -- so the only question is whether it is
-# correct, and that is Test's job.
-#
-# The push trigger is not redundant here: this repository has no CD, so nothing
-# else covers a merge to main.
-#
-# The steps are .github/actions/test, the same definition Release runs. There is
-# one of it, and it is the one guarding a publish to the GDAM registry.
-
-on:
+name: Build & Test
+'on':
   pull_request:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - ready_for_review
   push:
-    branches: [main]
-  workflow_dispatch:
-
+    branches:
+    - main
+  workflow_dispatch: null
 permissions:
   contents: read
-
+  attestations: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   ci:
-    name: "Test"
+    name: Test
     runs-on: ubuntu-24.04
-    # Bounded, so a step that hangs fails here rather than sitting until the
-    # runner's own timeout hours later.
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
-      # Third-party actions are pinned by SHA, with the tag in a trailing
-      # comment so the version is still readable. A tag is a moving reference:
-      # whoever can move it can run code in this job.
-      - name: "Check out source"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Record tested integration identity
-        if: github.event_name == 'pull_request'
-        uses: nicodes/tools/integration-identity@247267492cd455647facafcfcc6eed4c63c49c0e # v0.27.2
-        env:
-          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
-      - name: Upload artifacts
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: fleet-integration-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .artifacts/fleet-integration.json
-          if-no-files-found: error
-          retention-days: 7
-      - name: "Validate workflow standards"
-        uses: nicodes/tools/workflow-standards@247267492cd455647facafcfcc6eed4c63c49c0e # v0.27.2
-      - name: Test
-        uses: ./.github/actions/test
+    - name: Check out source
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      with:
+        persist-credentials: false
+    - name: Set up locked Komizo
+      uses: nicodes/komizo/setup@f7b2d96c5456827633e0a4adce67f8604bbdd193
+      env:
+        GH_TOKEN: ${{ github.token }}
+      timeout-minutes: 5
+    - name: Record tested integration identity
+      if: github.event_name == 'pull_request'
+      env:
+        EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+      run: |
+        komizo exec --tools python -- bash -euo pipefail <<'KOMIZO_COMMAND'
+        python3 "$CICD_ENGINEERING/helpers/integration-identity.py"
+        KOMIZO_COMMAND
+    - name: Upload artifacts
+      if: github.event_name == 'pull_request'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+      with:
+        name: fleet-integration-${{ github.run_id }}-${{ github.run_attempt }}
+        path: .artifacts/fleet-integration.json
+        if-no-files-found: error
+        retention-days: 7
+        include-hidden-files: true
+    - name: Check project
+      uses: nicodes/komizo/run@f7b2d96c5456827633e0a4adce67f8604bbdd193
+      with:
+        target: check
+    env:
+      MISE_GITHUB_TOKEN: ${{ github.token }}

@@ -3,3 +3,7 @@ dist/
 __pycache__/
 
 .artifacts/
+
+.komizo.mise*.toml
+
+.komizo.mise*.lock

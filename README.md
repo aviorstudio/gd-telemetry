@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 7d3ea14e62ebbf1b880404b266689d74b27c68e0dfdd4337d1fc2e9a67ed4839 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 484e05b5deeb539f9d6de3ef9606e4761687db35626fe1ae218d66ff4fe5699b -->
 
 # gd-telemetry
 
@@ -98,6 +98,14 @@ Serialized events use this dictionary shape:
 
 See `LICENSE`.
 
-## Standard developer commands
+## Repository development
 
-Run `make install` to install the checksum-pinned engineering release and exact Godot engine into checkout-owned output. Run `make check` for the existing package, behavioral and editor-lifecycle gates in order. `make build` creates the package; `make test` runs the behavioral gates, and `make artifact-smoke` checks the built package in the editor. `make clean` removes generated output. Development happens in a consuming Godot project, so standalone dev/stop are unsupported.
+Install the [Komizo release](https://github.com/nicodes/komizo#install) matching `komizo.lock`.
+
+```sh
+komizo check                 # Source, runtime, package and installed-addon checks
+komizo run test              # Focused addon test suite
+komizo run artifact-check    # Verify the built package
+```
+
+The addon recipe supplies the verified Godot engine and templates in checkout-owned tool/data directories. Interactive use belongs to a consuming Godot project.
