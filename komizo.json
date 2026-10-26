@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "recipe": "godot-addon",
+  "repository": "aviorstudio/gd-telemetry",
+  "stages": {
+    "lint": {
+      "inapplicable": "No separate source lint gate is declared; runtime and package checks remain required"
+    }
+  },
+  "validation": {
+    "workflow": {
+      "required": [
+        "ci.yml",
+        "dependency-policy.yml",
+        "release.yml"
+      ],
+      "ci_gates": [
+        "Test"
+      ]
+    }
+  }
+}
