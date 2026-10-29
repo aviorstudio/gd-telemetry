@@ -27,7 +27,7 @@ jobs:
       with:
         persist-credentials: false
     - name: Set up locked komizo
-      uses: nicodes/komizo/setup@54da2b6d20fda9febf3cd02039424a1a8249cffb
+      uses: nicodes/komizo/setup@1b740f28682948a2d5eb4613744bb262d2056e6c
       env:
         GH_TOKEN: ${{ github.token }}
       timeout-minutes: 5
@@ -49,7 +49,7 @@ jobs:
         retention-days: 7
         include-hidden-files: true
     - name: Check project
-      uses: nicodes/komizo/run@54da2b6d20fda9febf3cd02039424a1a8249cffb
+      uses: nicodes/komizo/run@1b740f28682948a2d5eb4613744bb262d2056e6c
       with:
         target: check
     env:
