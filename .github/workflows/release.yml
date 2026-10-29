@@ -27,7 +27,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Set up locked komizo
-      uses: nicodes/komizo/setup@54da2b6d20fda9febf3cd02039424a1a8249cffb
+      uses: nicodes/komizo/setup@1b740f28682948a2d5eb4613744bb262d2056e6c
       env:
         GH_TOKEN: ${{ github.token }}
       timeout-minutes: 5
@@ -62,7 +62,7 @@ jobs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo "tag=$tag" >> "$GITHUB_OUTPUT"
     - name: Check project
-      uses: nicodes/komizo/run@54da2b6d20fda9febf3cd02039424a1a8249cffb
+      uses: nicodes/komizo/run@1b740f28682948a2d5eb4613744bb262d2056e6c
       with:
         target: check
     - name: Record tested artifact identity
