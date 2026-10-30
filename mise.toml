@@ -1,0 +1,47 @@
+[tools]
+"python" = "3.13.11"
+
+[env]
+TOOLS_ROOT = "{{ get_env(name='TOOLS_ROOT', default=config_root ~ '/.ci-tools') }}"
+GOTOOLCHAIN = "local"
+PYTHONDONTWRITEBYTECODE = "1"
+
+[tasks."install"]
+run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.artifacts/godot-data\" PATH=\"$PWD/.artifacts/godot/bin:$PATH\" python3 \"$TOOLS_ROOT/helpers/godot-setup.py\" --version 4.7.2 --expected-version 4.7.2.stable.official.ed1daf0bf --binary-checksum sha256:cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4 --root .artifacts/godot --origin godot-builds --templates --templates-checksum sha256:f298490b8d44d934be425a5a65a51bf15f422428b229a06a6e11d9ffea248011"]
+
+[tasks."unit"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" test --name unit --artifact dist -- mise run _unit"
+depends = ["install"]
+
+[tasks."build"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" build --name build --artifact dist -- mise run _build"
+depends = ["install"]
+
+[tasks."artifact-check"]
+run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.artifacts/godot-data\" PATH=\"$PWD/.artifacts/godot/bin:$PATH\" bash scripts/artifact-check.sh"]
+depends = ["build"]
+
+[tasks."clean"]
+run = ["python3 -c 'from pathlib import Path; import shutil; paths=[Path('\"'\"'.artifacts'\"'\"'),Path('\"'\"'dist'\"'\"')]; assert not any(p.is_symlink() for p in paths), '\"'\"'linked output refused'\"'\"'; [shutil.rmtree(p) for p in paths if p.exists()]'"]
+
+[tasks."_build"]
+run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.artifacts/godot-data\" PATH=\"$PWD/.artifacts/godot/bin:$PATH\" bash scripts/build.sh"]
+hide = true
+
+[tasks."_unit"]
+run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.artifacts/godot-data\" PATH=\"$PWD/.artifacts/godot/bin:$PATH\" bash scripts/unit.sh"]
+hide = true
+
+[tasks."_test-stages"]
+run = [{"task" = "unit"}]
+hide = true
+
+[tasks."test"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit -- mise run _test-stages"
+
+[tasks."_check-stages"]
+run = [{"task" = "install"}, {"task" = "build"}, {"task" = "unit"}, {"task" = "artifact-check"}]
+hide = true
+
+[tasks."check"]
+run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit -- mise run _check-stages"

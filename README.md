@@ -1,4 +1,4 @@
-<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 7d3ea14e62ebbf1b880404b266689d74b27c68e0dfdd4337d1fc2e9a67ed4839 -->
+<!-- Generated from private documentation source. Do not edit directly. Source SHA256: 9180ffab9cb35be4da0eac0379c1bee5bffbb8aec362e053d518b7049676684c -->
 
 # gd-telemetry
 
@@ -97,3 +97,16 @@ Serialized events use this dictionary shape:
 ## License
 
 See `LICENSE`.
+
+## Contributor checks
+
+Install [mise](https://mise.jdx.dev/), then prepare the pinned development helpers and run the complete native gate:
+
+```sh
+git clone https://github.com/nicodes/tools.git .ci-tools
+git -C .ci-tools checkout --detach f7e243524ce2aa29f299e4c79db33001f72f4a30
+mise install
+mise run check
+```
+
+`mise.toml` owns tool versions and tasks. Engine and template downloads are checksum verified. `mise run build` packages the addon; `mise run test` runs its declared tests. The complete check also validates the installed artifact. Build and test receipts stay in `.artifacts/verification`.

@@ -26,8 +26,8 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         fetch-depth: 0
-    - name: Set up locked komizo
-      uses: nicodes/komizo/setup@2ca94e2fd4bb05f41bb228e9c366e5cc733c75e6
+    - name: Set up development tools
+      uses: nicodes/tools/setup@f7e243524ce2aa29f299e4c79db33001f72f4a30
       env:
         GH_TOKEN: ${{ github.token }}
       timeout-minutes: 5
@@ -35,7 +35,7 @@ jobs:
       id: release
       env:
         BUMP: ${{ inputs.bump }}
-      run: |
+      run: |-
         set -euo pipefail
         test "$GITHUB_REF" = refs/heads/main || { echo 'Run releases from main.' >&2; exit 1; }
         git fetch --tags --force
@@ -62,9 +62,10 @@ jobs:
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo "tag=$tag" >> "$GITHUB_OUTPUT"
     - name: Check project
-      uses: nicodes/komizo/run@2ca94e2fd4bb05f41bb228e9c366e5cc733c75e6
-      with:
-        target: check
+      shell: bash
+      run: |-
+        set -euo pipefail
+        mise run check
     - name: Record tested artifact identity
       run: (cd dist && sha256sum @aviorstudio_gd-telemetry.zip > @aviorstudio_gd-telemetry.zip.sha256)
     - name: Upload artifacts
@@ -102,8 +103,8 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TAG: ${{ needs.prepare.outputs.tag }}
-      run: gh release create "$TAG" dist/@aviorstudio_gd-telemetry.zip dist/@aviorstudio_gd-telemetry.zip.sha256 dist/installed-tree.sha256 --target
-        "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG from tested bytes"
+      run: gh release create "$TAG" dist/@aviorstudio_gd-telemetry.zip dist/@aviorstudio_gd-telemetry.zip.sha256 dist/installed-tree.sha256
+        --target "$GITHUB_SHA" --title "$TAG" --notes "Release $TAG from tested bytes"
     - name: Publish addon
       uses: aviorstudio/gdam-actions/publish@3a46007e296e60e15a4ad47727ad33046e52e6ea
       with:
