@@ -11,7 +11,8 @@
   "managed_dependencies": [
     "aviorstudio/gdam-actions/*",
     "nicodes/komizo-actions/*",
-    "nicodes/komizo/*"
+    "nicodes/komizo/*",
+    "nicodes/tools/*"
   ],
   "sensitive_dependencies": [
     "*clerk*",
