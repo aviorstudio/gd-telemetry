@@ -22,7 +22,7 @@ run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.
 depends = ["build"]
 
 [tasks."clean"]
-run = ["python3 -c 'from pathlib import Path; import shutil; paths=[Path('\"'\"'.artifacts'\"'\"'),Path('\"'\"'dist'\"'\"')]; assert not any(p.is_symlink() for p in paths), '\"'\"'linked output refused'\"'\"'; [shutil.rmtree(p) for p in paths if p.exists()]'"]
+run = "python3 \"$TOOLS_ROOT/helpers/clean.py\" --path dist --path .artifacts/build --path .artifacts/godot --path .artifacts/godot-data --path .artifacts/tmp --path .godot"
 
 [tasks."_build"]
 run = ["env GODOT_BIN=\"$PWD/.artifacts/godot/bin/godot\" XDG_DATA_HOME=\"$PWD/.artifacts/godot-data\" PATH=\"$PWD/.artifacts/godot/bin:$PATH\" bash scripts/build.sh"]
@@ -40,8 +40,11 @@ hide = true
 run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit -- mise run _test-stages"
 
 [tasks."_check-stages"]
-run = [{"task" = "install"}, {"task" = "build"}, {"task" = "unit"}, {"task" = "artifact-check"}]
+run = [{task = "install"}, {task = "lint"}, {task = "build"}, {task = "unit"}, {task = "artifact-check"}]
 hide = true
 
 [tasks."check"]
 run = "python3 \"$TOOLS_ROOT/helpers/verification.py\" session --test unit -- mise run _check-stages"
+
+[tasks."lint"]
+run = ["bash -n scripts/*.sh", "python3 -c 'import ast;from pathlib import Path;[ast.parse(p.read_text(),filename=str(p)) for p in Path(\"scripts\").rglob(\"*.py\")]'"]
