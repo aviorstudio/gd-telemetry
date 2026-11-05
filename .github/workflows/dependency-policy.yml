@@ -1,62 +1,23 @@
+# Generated cookbook caller. Change recipe data and regenerate.
 name: Dependency Policy
 'on':
   pull_request_target:
-    types:
-    - opened
-    - synchronize
-    - reopened
-    - ready_for_review
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_run:
-    workflows:
-    - Build & Test
-    types:
-    - completed
-  workflow_dispatch: null
+    workflows: [Build & Test]
+    types: [completed]
+  workflow_dispatch: {}
   schedule:
-  - cron: 4 6 * * *
-permissions:
-  contents: write
-  pull-requests: write
-  actions: write
-  checks: read
-  statuses: read
-concurrency:
-  group: dependency-policy
-  cancel-in-progress: false
+    - cron: '4 6 * * *'
+permissions: {}
 jobs:
-  auto-merge:
-    name: Apply dependency policy
-    if: github.ref == 'refs/heads/main' && (github.event_name != 'pull_request_target' || (github.event.pull_request.user.login
-      == 'dependabot[bot]' && github.event.pull_request.draft == false))
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
+  request:
+    uses: nicodes/tools/.github/workflows/cookbook-dependencies.yml@29171802204d39c4ad70794078bfaaa485003531
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      pull-requests: read
       actions: write
       checks: read
       statuses: read
-      attestations: read
-    steps:
-    - name: Check out source
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        persist-credentials: false
-        ref: main
-      timeout-minutes: 3
-    - name: Reconcile verified dependency updates
-      env:
-        GH_TOKEN: ${{ github.token }}
-      timeout-minutes: 7
-      uses: nicodes/tools/dependencies@a1c0321f3b4917a7e99eca42e241e46670f6e1e1
-      with:
-        apply: 'true'
-        output: ${{ runner.temp }}/dependency-report.json
-    - name: Upload artifacts
-      if: always()
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-      with:
-        name: dependency-policy-${{ github.run_id }}-${{ github.run_attempt }}
-        path: ${{ runner.temp }}/dependency-report.json
-        if-no-files-found: error
-        retention-days: 14
+    with:
+      tools-ref: 29171802204d39c4ad70794078bfaaa485003531
