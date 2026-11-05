@@ -7,18 +7,28 @@ name: Request merge
         description: PR number to fully validate and merge when current
         type: string
         required: true
+      expected-head:
+        description: Exact head selected by a dependency policy decision; paired with expected-base
+        type: string
+        default: ''
+      expected-base:
+        description: Exact main selected by a dependency policy decision; paired with expected-head
+        type: string
+        default: ''
 permissions: {}
 concurrency:
   group: cookbook-merge-${{ github.repository }}
   cancel-in-progress: false
 jobs:
   request:
-    uses: nicodes/tools/.github/workflows/cookbook-request-merge.yml@ade449c3150fd5a9c86fb6ec21d8ae905d6a2754
+    uses: nicodes/tools/.github/workflows/cookbook-request-merge.yml@d475b54c402754a5a37a44fbd65328551995025c
     permissions:
       contents: write
       pull-requests: read
       statuses: write
       actions: write
     with:
-      tools-ref: ade449c3150fd5a9c86fb6ec21d8ae905d6a2754
+      tools-ref: d475b54c402754a5a37a44fbd65328551995025c
       pull-request: ${{ inputs.pull-request }}
+      expected-head: ${{ inputs.expected-head }}
+      expected-base: ${{ inputs.expected-base }}
