@@ -1,0 +1,46 @@
+version = 1
+recipe = "godot-addon"
+
+[package]
+source = "addon"
+manifest = "package.files"
+archive = "dist/@aviorstudio_gd-telemetry.zip"
+
+[lint]
+required_paths = ["addon/plugin.cfg", "package.files"]
+
+[format]
+paths = ["addon", "tests/telemetry_module_test.gd"]
+
+[clean]
+paths = ["dist", ".artifacts/build", ".artifacts/godot", ".artifacts/godot-data", ".artifacts/godot-config", ".artifacts/tmp", ".artifacts/playwright", ".godot", "node_modules"]
+
+[artifacts]
+evidence_paths = ["dist/installed-tree.sha256"]
+
+[[tests.unit]]
+runner = "bash"
+path = "tests/gate_controls.sh"
+timeout = 60
+
+[[tests.unit]]
+runner = "godot"
+path = "tests/telemetry_module_test.gd"
+sentinel = "TEST_REACHED:telemetry_module_test.gd"
+timeout = 60
+
+[[tests.integration]]
+runner = "bash"
+path = "tests/package_controls.sh"
+args = ["dist/@aviorstudio_gd-telemetry.zip"]
+timeout = 300
+
+[publication]
+tag_prefix = "v"
+initial = "first"
+validation_timeout = 20
+publish_timeout = 10
+evidence_assets = ["dist/installed-tree.sha256"]
+
+[ci]
+timeout_minutes = 30

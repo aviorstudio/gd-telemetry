@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 ARCHIVE="${1:?release ZIP required}"
 GODOT="${GODOT_BIN:-godot}"
-python3 "$ROOT/scripts/package_addon.py" verify "$ARCHIVE"
+python3 "${TOOLS_ROOT:?Pinned cookbook required}/helpers/addon-package.py" verify --manifest "$ROOT/package.files" --archive "$ARCHIVE"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 python3 - "$ARCHIVE" "$tmp" <<'PY'
@@ -23,7 +23,7 @@ for name, member, symlink in (("traversal.zip", "../escape", False), ("undeclare
         z.writestr(info, b"x")
 PY
 for bad in "$tmp"/*.zip; do
-    if python3 "$ROOT/scripts/package_addon.py" verify "$bad"; then
+    if python3 "${TOOLS_ROOT:?Pinned cookbook required}/helpers/addon-package.py" verify --manifest "$ROOT/package.files" --archive "$bad"; then
         echo "unsafe package unexpectedly passed: $bad" >&2
         exit 1
     fi
