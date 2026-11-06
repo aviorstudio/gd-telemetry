@@ -2,8 +2,6 @@ version = 1
 recipe = "godot-addon"
 
 [package]
-source = "addon"
-manifest = "package.files"
 archive = "dist/@aviorstudio_gd-telemetry.zip"
 
 [lint]
