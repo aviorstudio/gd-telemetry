@@ -41,6 +41,3 @@ initial = "first"
 validation_timeout = 20
 publish_timeout = 10
 evidence_assets = ["dist/installed-tree.sha256"]
-
-[ci]
-timeout_minutes = 30
