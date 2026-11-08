@@ -12,7 +12,7 @@ name: Dependency Policy
 permissions: {}
 jobs:
   request:
-    uses: nicodes/cookbook/.github/workflows/cookbook-dependencies.yml@58a8cfb11756f01439f31e3ddd700e3184f71bf3
+    uses: nicodes/cookbook/.github/workflows/cookbook-dependencies.yml@77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
     permissions:
       contents: read
       pull-requests: read
@@ -20,4 +20,4 @@ jobs:
       checks: read
       statuses: read
     with:
-      cookbook-ref: 58a8cfb11756f01439f31e3ddd700e3184f71bf3
+      cookbook-ref: 77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
