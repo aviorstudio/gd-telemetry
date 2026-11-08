@@ -11,7 +11,7 @@ name: Build & Test
         description: Exact source commit; defaults to this main revision
         type: string
         default: ''
-      tools:
+      cookbook:
         description: Accepted cookbook commit; defaults to the pinned recipe
         type: string
         default: ''
@@ -21,14 +21,41 @@ concurrency:
   cancel-in-progress: true
 jobs:
   validate:
-    uses: nicodes/tools/.github/workflows/cookbook-ci.yml@061da6e56a06a629317536bf9482dab8a2ed6505
+    uses: nicodes/cookbook/.github/workflows/cookbook-ci.yml@58a8cfb11756f01439f31e3ddd700e3184f71bf3
     permissions:
       contents: read
       actions: read
       pull-requests: read
     with:
-      tools-ref: ${{ inputs.tools || '061da6e56a06a629317536bf9482dab8a2ed6505' }}
+      cookbook-ref: ${{ inputs.cookbook || '58a8cfb11756f01439f31e3ddd700e3184f71bf3' }}
       source: ${{ inputs.source || github.sha }}
-      merge-gate: ${{ vars.COOKBOOK_REQUEST_MERGE == 'enabled' }}
+      merge-gate: true
       runner: ubuntu-24.04
       timeout-minutes: 30
+  complete:
+    if: github.event_name == 'pull_request'
+    uses: nicodes/cookbook/.github/workflows/cookbook-ci.yml@58a8cfb11756f01439f31e3ddd700e3184f71bf3
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    with:
+      cookbook-ref: ${{ inputs.cookbook || '58a8cfb11756f01439f31e3ddd700e3184f71bf3' }}
+      source: ${{ inputs.source || github.sha }}
+      merge-gate: false
+      runner: ubuntu-24.04
+      timeout-minutes: 30
+  full-validation:
+    name: Full validation
+    if: always()
+    needs: [validate, complete]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    permissions: {}
+    steps:
+      - name: Require the complete current source validation
+        timeout-minutes: 1
+        uses: nicodes/cookbook/ci-result@58a8cfb11756f01439f31e3ddd700e3184f71bf3
+        with:
+          event-name: ${{ github.event_name }}
+          needs: ${{ toJSON(needs) }}
