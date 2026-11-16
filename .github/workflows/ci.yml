@@ -1,5 +1,6 @@
 # Generated cookbook caller. Change recipe data and regenerate.
 name: Build & Test
+run-name: "Build & Test · ${{ github.event.pull_request.number && format('PR #{0}', github.event.pull_request.number) || inputs.source || github.ref_name }}"
 'on':
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -21,41 +22,29 @@ concurrency:
   cancel-in-progress: true
 jobs:
   validate:
-    uses: nicodes/cookbook/.github/workflows/cookbook-ci.yml@77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
+    name: Checks
+    uses: nicodes/cookbook/.github/workflows/cookbook-validation.yml@d641e584b4c1a48428e2ba00025bcfaaa128fe62
     permissions:
       contents: read
       actions: read
       pull-requests: read
     with:
-      cookbook-ref: ${{ inputs.cookbook || '77d7bfa24cf0ec35a2de7585d48797b64f41cbb3' }}
+      cookbook-ref: ${{ inputs.cookbook || 'd641e584b4c1a48428e2ba00025bcfaaa128fe62' }}
       source: ${{ inputs.source || github.sha }}
-      merge-gate: true
+      mode: full
       runner: ubuntu-24.04
       timeout-minutes: 30
-  complete:
-    if: github.event_name == 'pull_request'
-    uses: nicodes/cookbook/.github/workflows/cookbook-ci.yml@77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
-    permissions:
-      contents: read
-      actions: read
-      pull-requests: read
-    with:
-      cookbook-ref: ${{ inputs.cookbook || '77d7bfa24cf0ec35a2de7585d48797b64f41cbb3' }}
-      source: ${{ inputs.source || github.sha }}
-      merge-gate: false
-      runner: ubuntu-24.04
-      timeout-minutes: 30
-  full-validation:
-    name: Full validation
+  build-test:
+    name: Build & Test
     if: always()
-    needs: [validate, complete]
+    needs: [validate]
     runs-on: ubuntu-24.04
     timeout-minutes: 1
     permissions: {}
     steps:
       - name: Require the complete current source validation
         timeout-minutes: 1
-        uses: nicodes/cookbook/ci-result@77d7bfa24cf0ec35a2de7585d48797b64f41cbb3
+        uses: nicodes/cookbook/ci-result@d641e584b4c1a48428e2ba00025bcfaaa128fe62
         with:
           event-name: ${{ github.event_name }}
           needs: ${{ toJSON(needs) }}
