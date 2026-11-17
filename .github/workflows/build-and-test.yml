@@ -23,13 +23,13 @@ concurrency:
 jobs:
   validate:
     name: Test
-    uses: nicodes/cookbook/.github/workflows/build-and-test-host.yml@91eb552cd44e876a66bbc519ef81f36a3789f397
+    uses: nicodes/cookbook/.github/workflows/build-and-test-host.yml@0c55c2daa7ecf69d8e1520c78ea0539fea5540fb
     permissions:
       contents: read
       actions: read
       pull-requests: read
     with:
-      cookbook-ref: ${{ inputs.cookbook || '91eb552cd44e876a66bbc519ef81f36a3789f397' }}
+      cookbook-ref: ${{ inputs.cookbook || '0c55c2daa7ecf69d8e1520c78ea0539fea5540fb' }}
       source: ${{ inputs.source || github.sha }}
       mode: full
       runner: ubuntu-24.04
@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Require the complete current source validation
         timeout-minutes: 1
-        uses: nicodes/cookbook/ci-result@91eb552cd44e876a66bbc519ef81f36a3789f397
+        uses: nicodes/cookbook/ci-result@0c55c2daa7ecf69d8e1520c78ea0539fea5540fb
         with:
           event-name: ${{ github.event_name }}
           needs: ${{ toJSON(needs) }}

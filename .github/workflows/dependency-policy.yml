@@ -13,7 +13,7 @@ permissions: {}
 jobs:
   request:
     name: Review dependencies
-    uses: nicodes/cookbook/.github/workflows/dependency-policy.yml@91eb552cd44e876a66bbc519ef81f36a3789f397
+    uses: nicodes/cookbook/.github/workflows/dependency-policy.yml@0c55c2daa7ecf69d8e1520c78ea0539fea5540fb
     permissions:
       contents: read
       pull-requests: read
@@ -21,4 +21,4 @@ jobs:
       checks: read
       statuses: read
     with:
-      cookbook-ref: 91eb552cd44e876a66bbc519ef81f36a3789f397
+      cookbook-ref: 0c55c2daa7ecf69d8e1520c78ea0539fea5540fb
