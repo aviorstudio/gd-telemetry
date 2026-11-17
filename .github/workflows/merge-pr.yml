@@ -1,5 +1,5 @@
 # Generated cookbook caller. Change recipe data and regenerate.
-name: Merge pull request
+name: Merge PR
 run-name: "Merge PR #${{ inputs.pull-request }}"
 'on':
   workflow_dispatch:
@@ -23,14 +23,14 @@ concurrency:
 jobs:
   request:
     name: Merge
-    uses: nicodes/cookbook/.github/workflows/cookbook-request-merge.yml@f1c6a5d224776bcee5128a8ce91392483af22566
+    uses: nicodes/cookbook/.github/workflows/merge-pr.yml@91eb552cd44e876a66bbc519ef81f36a3789f397
     permissions:
       contents: write
       pull-requests: read
       statuses: write
       actions: write
     with:
-      cookbook-ref: f1c6a5d224776bcee5128a8ce91392483af22566
+      cookbook-ref: 91eb552cd44e876a66bbc519ef81f36a3789f397
       pull-request: ${{ inputs.pull-request }}
       expected-head: ${{ inputs.expected-head }}
       expected-base: ${{ inputs.expected-base }}
