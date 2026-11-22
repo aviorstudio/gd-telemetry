@@ -16,13 +16,13 @@ concurrency:
 jobs:
   release:
     name: Release
-    uses: nicodes/cookbook/.github/workflows/release-addon-api-key.yml@878c66558effe5e0d6772873a96ed75a147ec525
+    uses: nicodes/cookbook/.github/workflows/release-addon-api-key.yml@05357b7efa0369d78db1b1a146dcde9b57ca36f8
     permissions:
       contents: write
       actions: read
       pull-requests: read
     with:
-      cookbook-ref: 878c66558effe5e0d6772873a96ed75a147ec525
+      cookbook-ref: 05357b7efa0369d78db1b1a146dcde9b57ca36f8
       mode: release
       bump: ${{ inputs.bump }}
     secrets:
