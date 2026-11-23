@@ -25,13 +25,13 @@ concurrency:
 jobs:
   validate:
     name: Build and test
-    uses: nicodes/cookbook/.github/workflows/build-and-test-host.yml@05357b7efa0369d78db1b1a146dcde9b57ca36f8
+    uses: nicodes/cookbook/.github/workflows/build-and-test-host.yml@4c2fb54b5a1fea02173ff0ab6cdcca4f53664daf
     permissions:
       contents: read
       actions: read
       pull-requests: read
     with:
-      cookbook-ref: ${{ inputs.cookbook || '05357b7efa0369d78db1b1a146dcde9b57ca36f8' }}
+      cookbook-ref: ${{ inputs.cookbook || '4c2fb54b5a1fea02173ff0ab6cdcca4f53664daf' }}
       source: ${{ inputs.source || github.sha }}
       mode: full
       runner: ubuntu-24.04
