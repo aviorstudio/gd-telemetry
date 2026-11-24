@@ -6,8 +6,6 @@ run-name: "Build and test · ${{ github.event.pull_request.number && format('PR 
     types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
     types: [checks_requested]
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       source:
@@ -23,16 +21,33 @@ concurrency:
   group: ci-${{ github.ref }}-${{ inputs.source || 'current' }}
   cancel-in-progress: true
 jobs:
-  validate:
+  build-test:
     name: Build and test
-    uses: nicodes/cookbook/.github/workflows/build-and-test-host.yml@4c2fb54b5a1fea02173ff0ab6cdcca4f53664daf
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: read
       actions: read
       pull-requests: read
-    with:
-      cookbook-ref: ${{ inputs.cookbook || '4c2fb54b5a1fea02173ff0ab6cdcca4f53664daf' }}
-      source: ${{ inputs.source || github.sha }}
-      mode: full
-      runner: ubuntu-24.04
-      timeout-minutes: 30
+    env:
+      COOKBOOK_VALIDATION_TIMEOUT: '30'
+      COOKBOOK_CANDIDATE_COMMIT: ${{ github.event.pull_request.head.sha || inputs.source || github.sha }}
+    steps:
+      - name: Prepare
+        timeout-minutes: 20
+        uses: nicodes/cookbook/prepare@bb884b740ce0e347080001c5fdc722edaa1ea090
+        with:
+          cookbook-ref: ${{ inputs.cookbook || 'bb884b740ce0e347080001c5fdc722edaa1ea090' }}
+          source: ${{ inputs.source || github.sha }}
+      - name: Build
+        timeout-minutes: 30
+        uses: nicodes/cookbook/build@bb884b740ce0e347080001c5fdc722edaa1ea090
+      - name: Test
+        timeout-minutes: 30
+        uses: nicodes/cookbook/test@bb884b740ce0e347080001c5fdc722edaa1ea090
+      - name: Finish
+        if: always()
+        timeout-minutes: 5
+        uses: nicodes/cookbook/finish@bb884b740ce0e347080001c5fdc722edaa1ea090
+        with:
+          status: ${{ job.status }}

@@ -1,6 +1,9 @@
 version = 1
 recipe = "godot-addon"
 
+[ci]
+single_job = true
+
 [package]
 archive = "dist/@aviorstudio_gd-telemetry.zip"
 
