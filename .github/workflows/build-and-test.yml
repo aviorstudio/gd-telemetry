@@ -35,19 +35,19 @@ jobs:
     steps:
       - name: Prepare
         timeout-minutes: 20
-        uses: nicodes/cookbook/prepare@2cdbf56cda3ed37d78be1b4e58cfe7ffcb943854
+        uses: nicodes/cookbook/prepare@7020748ab255d1200661e64b554419ac3839e220
         with:
-          cookbook-ref: ${{ inputs.cookbook || '2cdbf56cda3ed37d78be1b4e58cfe7ffcb943854' }}
+          cookbook-ref: ${{ inputs.cookbook || '7020748ab255d1200661e64b554419ac3839e220' }}
           source: ${{ inputs.source || github.sha }}
       - name: Build
         timeout-minutes: 30
-        uses: nicodes/cookbook/build@2cdbf56cda3ed37d78be1b4e58cfe7ffcb943854
+        uses: nicodes/cookbook/build@7020748ab255d1200661e64b554419ac3839e220
       - name: Test
         timeout-minutes: 30
-        uses: nicodes/cookbook/test@2cdbf56cda3ed37d78be1b4e58cfe7ffcb943854
+        uses: nicodes/cookbook/test@7020748ab255d1200661e64b554419ac3839e220
       - name: Finish
         if: always()
         timeout-minutes: 5
-        uses: nicodes/cookbook/finish@2cdbf56cda3ed37d78be1b4e58cfe7ffcb943854
+        uses: nicodes/cookbook/finish@7020748ab255d1200661e64b554419ac3839e220
         with:
           status: ${{ job.status }}
