@@ -1,5 +1,5 @@
 version = 2
-mode = "auto"
+mode = "merge-on-green"
 ci_workflow = "build-and-test.yml"
 required_checks = ["Build and test"]
 max_group_size = 10
